@@ -10,7 +10,7 @@ from telegram.ext import Application, MessageHandler, CommandHandler, filters, C
 
 # ======= توکن‌ها - اینجا مستقیم بنویس =======
 BOT_TOKEN = os.getenv("BOT_TOKEN", "8972616957:AAF7xroitHNkgv_olKDfWtOgi7Icpccu2tM")
-GROQ_KEY = os.getenv("GROQ_KEY", "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")
+GROQ_KEY = os.getenv("GROQ_KEY", "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")
 
 ADMIN_IDS = [123456789]  # <-- آیدی خودت رو عوض کن
 
