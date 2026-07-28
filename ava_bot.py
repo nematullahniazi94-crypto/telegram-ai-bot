@@ -9,8 +9,8 @@ from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
 
 # ======= توکن‌ها - اینجا مستقیم بنویس =======
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8972616957:AAF7xroitHNkgv_olKDfWtOgi7Icpccu2tM")
-GROQ_KEY = os.getenv("GROQ_KEY", "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")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+GROQ_KEY = os.getenv("GROQ_KEY")
 
 ADMIN_IDS = [123456789]  # <-- آیدی خودت رو عوض کن
 
