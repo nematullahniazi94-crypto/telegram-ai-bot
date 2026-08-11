@@ -13,7 +13,7 @@ from telegram.ext import Application, MessageHandler, CommandHandler, filters, C
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 GROQ_KEY = os.getenv("GROQ_KEY")
 
-ADMIN_IDS = [123456789]  # <-- آیدی خودت رو عوض کن
+ADMIN_IDS = [6725663214 ]  # <-- آیدی خودت رو عوض کن
 
 # ======= فایل‌های ذخیره =======
 DATA_FILE = "bot_data.json"
