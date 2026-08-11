@@ -436,7 +436,19 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 nicknames[str(target.id)] = title
                 save_data()
                 await update.message.reply_text(f"✅ لقب «{title}» برای {target.first_name} ثبت شد")
-                return    
+                return
+            elif msg.strip() == "حذف لقب":
+                if not update.message.reply_to_message:
+                    await update.message.reply_text("باید روی پیام همون عضو ریپلای بزنی و بنویسی: حذف لقب")
+                    return
+                target = update.message.reply_to_message.from_user
+                if str(target.id) in nicknames:
+                    del nicknames[str(target.id)]
+                    save_data()
+                    await update.message.reply_text(f"✅ لقب {target.first_name} حذف شد")
+                else:
+                    await update.message.reply_text(f"{target.first_name} لقبی نداره")
+                return
 
     # آمار برای همه
     if "آمار گروه" in msg and update.message.chat.type != "private":
