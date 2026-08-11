@@ -5,6 +5,7 @@ import json
 import os
 from datetime import datetime
 from collections import defaultdict
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
 
@@ -92,17 +93,17 @@ def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
-    return {"chat_histories": {}, "xp": {}, "user_names": {}}
+    return {"chat_histories": {}, "xp": {}, "user_names": {}, "nicknames": {}}
 
 def save_data():
     with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump({"chat_histories": chat_histories, "xp": xp_data, "user_names": user_names}, f, ensure_ascii=False)
+        json.dump({"chat_histories": chat_histories, "xp": xp_data, "user_names": user_names, "nicknames": nicknames}, f, ensure_ascii=False)
 
 data = load_data()
 chat_histories = data.get("chat_histories", {})
 xp_data = data.get("xp", {})
 user_names = data.get("user_names", {})
-
+nicknames = data.get("nicknames", {})
 message_count_today = defaultdict(int)
 last_reset_date = datetime.now().date()
 new_members_today = []
@@ -423,6 +424,19 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif "پین" in msg:
             await pin_msg(update, context)
             return
+        elif msg.startswith("لقب "):
+                if not update.message.reply_to_message:
+                    await update.message.reply_text("باید روی پیام همون عضو ریپلای بزنی و بنویسی: لقب متن")
+                    return
+                target = update.message.reply_to_message.from_user
+                if target.id in ADMIN_IDS:
+                    await update.message.reply_text("نمی‌تونی برای ادمین‌ها لقب بذاری 🚫")
+                    return
+                title = msg.replace("لقب ", "", 1).strip()
+                nicknames[str(target.id)] = title
+                save_data()
+                await update.message.reply_text(f"✅ لقب «{title}» برای {target.first_name} ثبت شد")
+                return    
 
     # آمار برای همه
     if "آمار گروه" in msg and update.message.chat.type != "private":
@@ -483,11 +497,39 @@ async def handle(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text = msg.replace(f"@{bot_username}", "").replace("/ask", "").strip()
         reply = ask_ai(user_id, text)
         await update.message.reply_text(reply)
-
-async def new_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def new_member(update: Update, context): 
     check_reset()
     for member in update.message.new_chat_members:
         new_members_today.append(member.full_name)
+
+        name = member.first_name or "دوست عزیز"
+        mention = f"[{name}](tg://user?id={member.id})"
+
+        caption = (
+            f"🎉 خوش اومدی {mention}!\n"
+            f"به گروه *{update.effective_chat.title}* خوش اومدی 🌸\n"
+            f"امیدوارم لحظات خوبی اینجا داشته باشی 💫"
+        )
+
+        keyboard = InlineKeyboardMarkup([
+            [InlineKeyboardButton("📜 قوانین گروه", callback_data="show_rules")],
+            [InlineKeyboardButton("👋 معرفی خودت", callback_data="intro_self")]
+        ])
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=caption,
+            parse_mode="Markdown",
+            reply_markup=keyboard
+        )
+
+        try:
+            await context.bot.send_message(
+                chat_id=member.id,
+                text=f"سلام {name} 👋\nخوش اومدی به گروه {update.effective_chat.title}!"
+            )
+        except Exception:
+            pass
 
 async def left_member(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.left_chat_member
